@@ -1,0 +1,122 @@
+[
+  {
+    "id": "48213",
+    "description": "Le MacBook Air M3 redéfinit la portabilité avec sa puce Apple Silicon M3 (8 cœurs CPU, 10 cœurs GPU) qui offre des performances fluides pour la bureautique, la retouche photo légère et le montage vidéo occasionnel. Avec 16 Go de mémoire unifiée et 512 Go de stockage SSD, il conserve une autonomie remarquable de 18 heures grâce à l'efficacité énergétique d'Apple Silicon. Son châssis en aluminium unibody de seulement 1.24 kg et 11.3 mm d'épaisseur en fait l'un des laptops les plus légers du marché, parfait pour les professionnels nomades et les étudiants qui voyagent beaucoup. Écran Liquid Retina 13.6 pouces lumineux (500 nits), sans ventilateur donc totalement silencieux. Vendu 1349 euros, disponible en argent, gris sidéral et minuit. macOS Sonoma préinstallé, garantie 1 an constructeur."
+  },
+  {
+    "id": "91847",
+    "description": "Le Dell XPS 15 s'adresse aux créateurs de contenu et développeurs exigeants qui ont besoin de puissance sans compromis. Équipé d'un processeur Intel Core i7-13700H (14 cœurs), 32 Go de RAM DDR5 et d'un SSD NVMe de 1 To, il embarque une carte graphique NVIDIA RTX 4060 8 Go pour le montage vidéo 4K, la retouche photo professionnelle et même le gaming occasionnel. Son écran 15.6 pouces OLED 3.5K tactile offre une précision colorimétrique exceptionnelle (100% DCI-P3), idéal pour les graphistes et monteurs. Châssis en aluminium usiné CNC, poids de 1.86 kg, autonomie annoncée de 13 heures. Proposé à 2199 euros, sous Windows 11 Pro, avec clavier rétroéclairé et lecteur d'empreintes digitales intégré."
+  },
+  {
+    "id": "27650",
+    "description": "L'ASUS ROG Strix G16 est une machine de guerre pensée pour le gaming compétitif. Sous le capot : un Intel Core i9-13980HX associé à une NVIDIA RTX 4070 8 Go, 16 Go de RAM DDR5 extensible, et 1 To de SSD ultra-rapide. Son écran 16 pouces QHD affiche un taux de rafraîchissement de 240Hz, garantissant une fluidité totale pour l'esport et les FPS compétitifs. Système de refroidissement ROG Intelligent Cooling avec chambre à vapeur pour maintenir les performances même en charge prolongée. Clavier RGB per-touch personnalisable, haut-parleurs Dolby Atmos. Poids de 2.5 kg, autonomie limitée à 5 heures en usage intensif (normal pour ce type de machine). Prix : 1799 euros. Livré avec Windows 11 et une garantie constructeur de 2 ans."
+  },
+  {
+    "id": "63298",
+    "description": "Le Lenovo ThinkPad X1 Carbon Gen 12 est la référence absolue pour les professionnels d'entreprise qui privilégient fiabilité et sécurité. Processeur Intel Core i7-1355U, 16 Go de RAM, 512 Go SSD chiffré par défaut. Certifié aux normes militaires MIL-STD-810H (résistance aux chocs, températures extrêmes, humidité), il traverse les déplacements professionnels sans faiblir. Écran 14 pouces WUXGA anti-reflet, clavier ThinkPad légendaire avec la meilleure frappe du marché selon de nombreux utilisateurs professionnels. Sécurité renforcée : lecteur d'empreintes, caméra infrarouge pour Windows Hello, puce TPM 2.0, obturateur physique de webcam. Poids plume de 1.12 kg, autonomie de 15 heures. Tarif entreprise : 1599 euros HT. Windows 11 Pro, garantie sur site 3 ans incluse."
+  },
+  {
+    "id": "15734",
+    "description": "L'iPhone 16 Pro Max représente le sommet de la gamme Apple pour 2026. Écran Super Retina XDR 6.9 pouces ProMotion 120Hz, puce A18 Pro gravée en 3nm offrant des performances inégalées pour le gaming mobile et les tâches d'intelligence artificielle embarquée. Système photo triple capteur 48MP (principal) + 48MP (ultra grand-angle) + 12MP (téléobjectif 5x), capable de filmer en ProRes 4K et de réaliser des portraits professionnels grâce au capteur LiDAR. Autonomie annoncée de 33 heures en lecture vidéo, charge rapide 45W et charge sans fil MagSafe. Châssis en titane grade 5, résistance à l'eau IP68. Stockage disponible de 256 Go à 1 To. Prix de départ : 1479 euros pour la version 256 Go. Coloris : titane naturel, titane bleu, titane blanc, titane noir."
+  },
+  {
+    "id": "82461",
+    "description": "Le Samsung Galaxy S25 Ultra mise tout sur la polyvalence et la productivité. Écran Dynamic AMOLED 2X de 6.8 pouces avec une luminosité de pointe à 2600 nits, parfaitement lisible même en plein soleil. Processeur Snapdragon 8 Gen 4 spécialement optimisé pour la gamme Galaxy, 12 Go de RAM, jusqu'à 512 Go de stockage. Système photo quadruple capteur avec un capteur principal 200MP, zoom optique 5x et fonctions d'intelligence artificielle Galaxy AI pour la retouche photo avancée (gomme magique, recomposition d'image). S Pen intégré dans le châssis, idéal pour la prise de notes et les créateurs qui dessinent sur mobile. Batterie 5000mAh avec charge rapide 45W. Résistant à l'eau IP68, châssis en titane. Prix : 1419 euros pour la version 256 Go, disponible en gris titane, noir titane et violet titane."
+  },
+  {
+    "id": "39572",
+    "description": "Le Google Pixel 9 Pro séduit par la pureté de son expérience Android et la qualité exceptionnelle de sa partie photo, boostée par l'intelligence artificielle maison de Google. Puce Tensor G4 conçue spécifiquement pour l'IA embarquée, 16 Go de RAM. Triple capteur photo 50MP + 48MP ultra grand-angle + 48MP téléobjectif avec un zoom optique 5x, réputé pour ses photos de nuit exceptionnelles grâce au mode Night Sight. Fonctionnalités IA exclusives : Magic Editor pour retoucher les photos par description textuelle, Call Screen pour filtrer les appels indésirables automatiquement. Écran OLED 6.3 pouces 120Hz. Sept ans de mises à jour Android garanties par Google, un argument fort pour la longévité. Batterie 4700mAh, charge rapide 27W. Prix : 999 euros pour 128 Go de stockage."
+  },
+  {
+    "id": "70185",
+    "description": "Le MSI Katana 15 s'impose comme une option gaming accessible pour les joueurs qui veulent de bonnes performances sans se ruiner. Intel Core i7-13620H couplé à une NVIDIA RTX 4060 8 Go, 16 Go de RAM DDR5, 1 To de SSD NVMe. Écran 15.6 pouces Full HD 144Hz offrant une fluidité confortable pour la grande majorité des jeux récents en réglages hauts. Système de refroidissement Cooler Boost 5 avec double ventilateur pour dissiper efficacement la chaleur en session prolongée. Clavier rétroéclairé rouge, châssis noir mat discret contrairement à d'autres laptops gaming très voyants. Poids de 2.25 kg, autonomie de 5 à 6 heures en usage bureautique léger. Tarif très compétitif de 1099 euros, une référence du rapport qualité-prix gaming. Windows 11 préinstallé."
+  },
+  {
+    "id": "54903",
+    "description": "L'ASUS ZenBook 14 OLED cible les professionnels créatifs qui veulent un écran d'exception dans un format ultraportable. Dalle OLED 14 pouces 2.8K tactile, certifiée Pantone pour une précision colorimétrique parfaite, idéale pour la retouche photo légère et le montage vidéo en déplacement. Processeur Intel Core i7-1355U, 16 Go de RAM LPDDR5, 1 To de SSD. Châssis en aluminium recyclé de seulement 1.39 kg, coloris bleu ponder élégant. Autonomie de 12 heures, charge rapide USB-C 65W (chargeur compact inclus). Clavier rétroéclairé avec pavé numérique tactile intégré au trackpad, une fonctionnalité pratique et originale. Certifié militaire MIL-STD-810H pour la robustesse. Prix : 1299 euros, Windows 11 Home."
+  },
+  {
+    "id": "16820",
+    "description": "Le HP Spectre x360 14 est un laptop convertible 2-en-1 haut de gamme qui se transforme en tablette grâce à sa charnière à 360 degrés. Écran OLED 14 pouces 2.8K tactile avec stylet HP inclus, parfait pour la prise de notes manuscrites et le dessin numérique. Intel Core i7-1355U, 16 Go de RAM, 1 To SSD. Design en aluminium taillé dans la masse avec des bords biseautés distinctifs et une finition bronze nocturne élégante. Webcam 5MP avec obturateur physique pour la confidentialité, quatre haut-parleurs Bang & Olufsen pour un son immersif. Poids de 1.36 kg, autonomie de 13 heures. Excellent choix pour les professionnels qui alternent entre présentation client (mode tablette) et rédaction (mode laptop classique). Prix : 1549 euros."
+  },
+  {
+    "id": "60347",
+    "description": "Le Xiaomi 14T Pro propose un excellent compromis entre performance et prix dans le segment premium accessible. Processeur MediaTek Dimensity 9300+ très puissant, 12 Go de RAM, 512 Go de stockage. Partenariat photo avec Leica pour une signature colorimétrique reconnue, triple capteur 50MP avec objectif principal Leica Summilux. Charge ultra rapide de 120W permettant de recharger complètement la batterie de 5000mAh en moins de 20 minutes, un argument très fort face à la concurrence. Écran AMOLED 6.67 pouces 144Hz. Certification IP68. Interface HyperOS basée sur Android 15. Rapport qualité-prix excellent à 749 euros pour la version 512 Go, une alternative crédible aux flagships plus chers du marché."
+  },
+  {
+    "id": "83721",
+    "description": "Le Lenovo Legion Pro 7 est une station de gaming mobile taillée pour les joueurs les plus exigeants, rivalisant presque avec un PC de bureau. AMD Ryzen 9 7945HX associé à une NVIDIA RTX 4090 16 Go, la carte graphique mobile la plus puissante du marché actuellement. 32 Go de RAM DDR5, 2 To de SSD NVMe en RAID 0 pour des temps de chargement quasi instantanés. Écran 16 pouces WQXGA 240Hz avec Nvidia G-Sync, calibré en usine pour une précision colorimétrique digne des moniteurs professionnels. Système de refroidissement Legion Coldfront 5.0 avec chambre à vapeur massive. Poids conséquent de 2.7 kg (normal pour cette puissance), autonomie limitée à 4 heures en charge. Prix élevé mais justifié : 3499 euros. Le choix ultime pour le gaming 4K et le streaming professionnel simultané."
+  },
+  {
+    "id": "27193",
+    "description": "L'Acer Aspire 5 représente une option fiable et abordable pour un usage bureautique quotidien sans prétention. AMD Ryzen 5 7530U, 8 Go de RAM extensible à 16 Go, 512 Go de SSD NVMe. Écran 15.6 pouces Full HD IPS avec de bons angles de vision. Châssis en aluminium sur le capot pour une finition qui dépasse son positionnement tarifaire, poids de 1.7 kg. Autonomie correcte de 9 heures pour de la bureautique légère (navigation, traitement de texte, visioconférence). Port Ethernet intégré, lecteur de cartes SD, ce qui reste pratique et de plus en plus rare sur les laptops fins. Idéal comme ordinateur familial ou pour un étudiant avec un budget serré. Prix très accessible : 549 euros, Windows 11 Home préinstallé."
+  },
+  {
+    "id": "94582",
+    "description": "L'iPhone 16 est le modèle grand public de la gamme Apple 2026, offrant l'essentiel de l'expérience iPhone sans les extras du Pro Max. Écran Super Retina XDR 6.1 pouces, puce A18 très performante pour toutes les tâches quotidiennes et même le gaming mobile exigeant. Double capteur photo 48MP principal + 12MP ultra grand-angle, avec le nouveau bouton Action personnalisable et le bouton Contrôle appareil photo dédié. Châssis en aluminium recyclé à 100%, résistant à l'eau IP68. Autonomie de 22 heures en lecture vidéo. Coloris disponibles : noir, blanc, rose, sauge, bleu outremer. Stockage de 128 Go à 512 Go. Prix de départ très raisonnable pour un iPhone : 969 euros pour la version 128 Go."
+  },
+  {
+    "id": "41639",
+    "description": "Le Samsung Galaxy A55 5G est le champion du rapport qualité-prix chez Samsung, offrant une expérience proche du haut de gamme à prix milieu de gamme. Écran Super AMOLED 6.6 pouces 120Hz avec Corning Gorilla Glass Victus+ pour une bonne résistance aux rayures. Processeur Exynos 1480, 8 Go de RAM. Triple capteur photo 50MP avec stabilisation optique, performant en toute condition de luminosité. Certification IP67 (résistance à l'eau et poussière), rare à ce niveau de prix. Batterie 5000mAh avec charge rapide 25W, tenant facilement une journée et demie d'usage intensif. Design en métal et verre, sensation premium en main. Cinq ans de mises à jour de sécurité garanties par Samsung. Prix très compétitif : 489 euros pour 256 Go de stockage."
+  },
+  {
+    "id": "58274",
+    "description": "L'ASUS ProArt Studiobook 16 s'adresse exclusivement aux créateurs professionnels : monteurs vidéo, graphistes 3D, coloristes. Intel Core i9-13980HX, NVIDIA RTX 4080 12 Go certifiée Studio Driver pour une compatibilité optimale avec les logiciels Adobe et DaVinci Resolve, 64 Go de RAM, 2 To de SSD. Écran 16 pouces OLED 4K calibré en usine avec certification Pantone, précision colorimétrique Delta E inférieure à 1 (niveau professionnel absolu). Molette physique ASUS Dial pour ajuster rapidement les curseurs dans les logiciels créatifs, une fonctionnalité unique très appréciée des monteurs. Châssis renforcé, poids de 2.4 kg. Autonomie limitée à 5 heures vu la puissance embarquée. Investissement conséquent de 3899 euros, mais justifié pour un usage professionnel intensif en post-production."
+  },
+  {
+    "id": "72046",
+    "description": "Le OnePlus 12 combine puissance brute et charge ultra-rapide dans un smartphone premium au tarif encore raisonnable face aux ténors du marché. Snapdragon 8 Gen 3, 16 Go de RAM, 512 Go de stockage. Écran AMOLED 6.82 pouces LTPO 120Hz avec une luminosité pic impressionnante de 4500 nits. Système photo Hasselblad avec triple capteur 50MP, réputé pour un traitement colorimétrique naturel et agréable. Charge filaire 100W (0 à 100% en environ 26 minutes) et charge sans fil 50W, parmi les plus rapides du marché. Refroidissement par chambre à vapeur pour maintenir les performances lors de sessions gaming prolongées. Batterie généreuse de 5400mAh. Interface OxygenOS fluide basée sur Android 15. Prix : 899 euros pour la version 512 Go."
+  },
+  {
+    "id": "31958",
+    "description": "Le Dell Inspiron 15 est le laptop généraliste par excellence pour un usage familial ou étudiant, sans fonctionnalité superflue mais fiable au quotidien. Intel Core i5-1335U, 16 Go de RAM, 512 Go SSD. Écran 15.6 pouces Full HD antireflet. Châssis en plastique de qualité correcte, poids de 1.85 kg, rien d'exceptionnel mais robuste pour un usage courant. Clavier confortable avec pavé numérique intégré, pratique pour la saisie de données. Autonomie de 8 heures en usage bureautique. Webcam HD intégrée, idéale pour les cours en visioconférence ou le télétravail occasionnel. Un choix pragmatique et sans risque pour equiper toute la famille ou un étudiant qui débute ses études supérieures. Prix accessible : 649 euros, Windows 11 Home."
+  },
+  {
+    "id": "85217",
+    "description": "Le MacBook Pro 14 M4 Pro s'adresse aux développeurs et créateurs professionnels qui ont besoin de la puissance maximale dans un format transportable. Puce Apple M4 Pro (12 cœurs CPU, 18 cœurs GPU), 24 Go de mémoire unifiée, 1 To de SSD. Écran Liquid Retina XDR mini-LED 14.2 pouces avec une luminosité pic de 1600 nits en HDR, référence absolue pour l'étalonnage vidéo professionnel. Autonomie exceptionnelle de 22 heures malgré la puissance embarquée, grâce à l'efficacité d'Apple Silicon. Trois ports Thunderbolt 5, port HDMI, lecteur de carte SD, jack casque : une connectique complète rare sur un laptop aussi fin. Châssis en aluminium gris sidéral ou argent, poids de 1.55 kg. Investissement premium de 2549 euros, justifié pour du développement logiciel intensif ou du montage vidéo professionnel régulier."
+  },
+  {
+    "id": "43620",
+    "description": "Le Nothing Phone 2a se distingue radicalement par son design transparent unique avec son Glyph Interface, des LED intégrées au dos qui s'allument selon les notifications reçues. MediaTek Dimensity 7200 Pro, 12 Go de RAM. Double capteur photo 50MP, correct sans être exceptionnel mais suffisant pour un usage quotidien standard. Écran AMOLED 6.7 pouces 120Hz lumineux et agréable. Interface Nothing OS très épurée, proche de l'Android pur, sans applications préinstallées inutiles. Batterie 5000mAh avec une autonomie confortable de deux jours en usage modéré. Un choix original pour les utilisateurs qui veulent se démarquer visuellement sans exploser leur budget. Prix : 349 euros pour 256 Go, un excellent rapport qualité-prix-design."
+  },
+  {
+    "id": "67304",
+    "description": "Le MSI Prestige 16 AI Evo cible les professionnels en mobilité qui ont besoin de puissance de calcul IA locale, notamment pour l'exécution de modèles de langage ou la génération d'images en local. Intel Core Ultra 9 185H avec NPU dédié à l'intelligence artificielle (jusqu'à 47 TOPS), 32 Go de RAM, 1 To SSD. Écran 16 pouces 3K OLED tactile, précision colorimétrique certifiée pour les professionnels de l'image. Châssis fin en alliage d'aluminium, poids de 1.7 kg malgré la puissance embarquée. Autonomie de 10 heures grâce à l'efficacité de la nouvelle génération Intel Core Ultra. Idéal pour les développeurs qui travaillent sur des projets d'intelligence artificielle en local, comme des assistants RAG ou des chatbots, sans dépendre systématiquement du cloud. Prix : 1899 euros."
+  },
+  {
+    "id": "29465",
+    "description": "Le Google Pixel 9a apporte l'expérience Pixel authentique dans un format plus accessible financièrement. Puce Tensor G4 identique aux modèles Pro, garantissant les mêmes performances IA malgré le tarif réduit. 8 Go de RAM, 128 Go de stockage. Double capteur photo 48MP principal avec stabilisation optique, offrant une qualité photo remarquable pour ce segment de prix grâce au traitement logiciel Google. Écran OLED 6.1 pouces 120Hz. Sept ans de mises à jour garanties, un argument de longévité imbattable sur le marché Android. Batterie 4700mAh avec une autonomie confortable d'une journée complète. Design en aluminium recyclé avec certification IP68. Le choix rationnel pour qui veut la meilleure expérience logicielle Android sans payer le prix fort des modèles Pro. Prix : 549 euros."
+  },
+  {
+    "id": "50839",
+    "description": "Le Razer Blade 16 est une référence gaming premium au design sobre et professionnel, loin des laptops gaming tape-à-l'œil habituels. Intel Core i9-14900HX, NVIDIA RTX 4090 16 Go, 32 Go de RAM DDR5, 2 To SSD. Écran 16 pouces Mini-LED 240Hz avec une résolution dynamique commutable entre UHD+ et QHD+ selon le besoin (productivité créative ou fluidité gaming maximale). Châssis unibody en aluminium noir mat, un des plus fins du segment gaming haut de gamme malgré la puissance embarquée. Clavier RGB Razer Chroma personnalisable par touche. Poids de 2.45 kg, autonomie de 6 heures. Positionnement premium à 3799 euros, pour les joueurs et créateurs qui veulent le meilleur sans compromis esthétique."
+  },
+  {
+    "id": "38172",
+    "description": "Le Samsung Galaxy Z Flip 6 réinvente le smartphone compact grâce à son format pliable innovant. Une fois ouvert, écran Dynamic AMOLED 2X 6.7 pouces classique ; plié, il tient dans n'importe quelle petite poche. Petit écran externe de 3.4 pouces permettant de consulter notifications et de prendre des selfies sans ouvrir le téléphone. Snapdragon 8 Gen 3, 12 Go de RAM. Double capteur photo 50MP, correct pour un usage quotidien et les réseaux sociaux. Charnière renforcée Armor FlexHinge conçue pour résister à des centaines de milliers de pliages. Batterie 4000mAh, autonomie correcte d'une journée. Certification IP48 (résistance limitée mais présente pour un pliable). Un choix pour les utilisateurs qui privilégient l'originalité et le format compact. Prix : 1199 euros pour 256 Go."
+  },
+  {
+    "id": "94718",
+    "description": "Le HP Omen 16 propose une alternative gaming solide avec un excellent refroidissement, point souvent critique sur les laptops gaming. AMD Ryzen 7 8845HS, NVIDIA RTX 4070 8 Go, 16 Go de RAM DDR5, 1 To SSD. Système de refroidissement Omen Tempest avec quatre voies d'évacuation d'air, maintenant des températures basses même en session de plusieurs heures. Écran 16.1 pouces QHD 165Hz avec une bonne couverture colorimétrique (sRGB 100%), permettant un usage mixte gaming et création légère. Châssis discret gris foncé sans RGB agressif, plus polyvalent pour un usage professionnel occasionnel. Poids de 2.4 kg. Autonomie de 6 heures. Bon compromis performance-discrétion à 1449 euros, pour les joueurs qui veulent aussi utiliser leur machine en contexte professionnel sans complexe."
+  },
+  {
+    "id": "16053",
+    "description": "Le Lenovo IdeaPad Slim 3 est le choix économique par excellence pour un usage bureautique basique sans concession excessive sur la qualité. AMD Ryzen 5 7530U, 8 Go de RAM, 512 Go SSD NVMe (rapide malgré le tarif accessible). Écran 15.6 pouces Full HD, résolution correcte pour la navigation et le traitement de texte. Châssis plastique gris satiné, finition simple mais propre. Poids de 1.63 kg. Autonomie annoncée de 10 heures pour un usage bureautique modéré. Webcam HD avec obturateur physique pour la confidentialité. Un excellent premier ordinateur pour un étudiant ou un usage familial secondaire, sans fonctionnalité premium mais parfaitement fonctionnel pour les tâches du quotidien. Prix imbattable : 429 euros."
+  },
+  {
+    "id": "70294",
+    "description": "Le Xiaomi Redmi Note 13 Pro+ démocratise des fonctionnalités habituellement réservées au haut de gamme à un tarif très agressif. MediaTek Dimensity 7200 Ultra, 12 Go de RAM, 512 Go de stockage. Capteur photo principal 200MP avec stabilisation optique, une résolution impressionnante à ce niveau de prix. Écran AMOLED incurvé 6.67 pouces 120Hz certifié Dolby Vision. Charge ultra rapide 120W (batterie 5000mAh chargée à 100% en 19 minutes), une prouesse rare même chez les flagships. Certification IP68, résistance à l'eau et à la poussière au niveau premium. Interface HyperOS. Un rapport fonctionnalités-prix redoutable qui bouscule la hiérarchie habituelle du marché. Prix : 399 euros, l'un des meilleurs achats du segment milieu de gamme."
+  },
+  {
+    "id": "82605",
+    "description": "L'ASUS Vivobook Pro 15 OLED cible les créateurs de contenu débutants et les étudiants en école de design avec un budget maîtrisé. AMD Ryzen 7 7735H, NVIDIA RTX 4050 6 Go, 16 Go de RAM, 512 Go SSD. Écran OLED 15.6 pouces 2.8K offrant des couleurs vives et des noirs profonds, rare à ce tarif pour un écran de cette qualité. Châssis en aluminium sur le capot, coloris bleu discret élégant. Poids de 1.7 kg. Autonomie de 8 heures. Idéal pour s'initier au montage vidéo, à la retouche photo ou à la modélisation 3D légère sans investir dans une machine professionnelle coûteuse. Un bon compromis pour progresser dans la création de contenu avant d'éventuellement monter en gamme. Prix : 999 euros."
+  },
+  {
+    "id": "45930",
+    "description": "L'iPhone SE (4e génération) propose l'expérience iOS la plus abordable du catalogue Apple, dans un format compact qui plaît aux amateurs de petits écrans. Puce A18, la même génération que l'iPhone 16, garantissant des performances excellentes malgré le tarif réduit. Écran OLED 6.1 pouces (format plus moderne que les générations SE précédentes qui gardaient le design à bouton physique). Simple capteur photo 48MP mais avec un traitement logiciel Apple très efficace. Face ID pour le déverrouillage. Autonomie correcte de 18 heures en lecture vidéo. Résistance à l'eau IP68. Un excellent point d'entrée dans l'écosystème Apple pour un budget maîtrisé, ou une option pour les utilisateurs qui trouvent les iPhone Pro Max trop volumineux. Prix : 599 euros pour 128 Go."
+  },
+  {
+    "id": "59416",
+    "description": "Le Framework Laptop 16 se distingue par son approche entièrement modulaire et réparable, une rareté dans l'industrie actuelle. AMD Ryzen 7 7840HS, module graphique NVIDIA RTX 4070 amovible et remplaçable indépendamment de la carte mère, 32 Go de RAM. Tous les composants (clavier, ports, batterie, écran) sont conçus pour être changés ou améliorés facilement par l'utilisateur avec un simple tournevis, prolongeant considérablement la durée de vie de la machine. Ports personnalisables via des modules interchangeables (USB-C, USB-A, HDMI, DisplayPort, lecteur de carte SD au choix). Écran 16 pouces 165Hz. Poids de 2.1 kg. Autonomie de 8 heures. Un choix engagé pour les utilisateurs sensibles à la réparabilité, à la réduction des déchets électroniques et à la liberté de faire évoluer leur machine dans le temps plutôt que de la remplacer entièrement. Prix : 1699 euros."
+  }
+]
