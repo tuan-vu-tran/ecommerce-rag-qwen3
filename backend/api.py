@@ -17,12 +17,12 @@ Lancement :
     python backend/api.py
 """
 
-import ollama
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from config import CORS_ORIGINS, OLLAMA_HOST, client_ollama
 from ingestion import (
     MODELE_EMBEDDING,
     charger_catalogue,
@@ -76,9 +76,10 @@ app = FastAPI(
 )
 
 # On autorise le frontend (React sur :3000, Vite sur :5173) à appeler l'API.
+# Surchargeable via la variable d'environnement CORS_ORIGINS (voir config.py).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -97,7 +98,22 @@ except Exception as e:  # pragma: no cover - échec au démarrage
     raise RuntimeError(f"Impossible de charger le catalogue au démarrage : {e}")
 
 # La collection ChromaDB est ouverte une fois et réutilisée par /chat.
+# ATTENTION : `ingestion.py` SUPPRIME puis recrée la collection. Si une
+# ingestion a lieu pendant que l'API tourne (par exemple `docker compose up`
+# qui rejoue le service ingest), le handle mis en cache pointe sur une
+# collection détruite et chromadb lève NotFoundError. On le rouvre alors une
+# fois, de façon transparente.
 _COLLECTION = obtenir_collection()
+
+
+def collection():
+    """Renvoie la collection, en la rouvrant si elle a été recréée entre-temps."""
+    global _COLLECTION
+    try:
+        _COLLECTION.count()
+    except Exception:
+        _COLLECTION = obtenir_collection()
+    return _COLLECTION
 
 
 # --------------------------------------------------------------------------
@@ -109,7 +125,7 @@ def health():
     ollama_ok = True
     detail = "ok"
     try:
-        ollama.list()  # simple ping : liste les modèles installés
+        client_ollama.list()  # simple ping : liste les modèles installés
     except Exception as e:
         ollama_ok = False
         detail = f"Ollama injoignable : {e}"
@@ -117,9 +133,10 @@ def health():
     return {
         "status": "ok" if ollama_ok else "degraded",
         "ollama": ollama_ok,
+        "ollama_host": OLLAMA_HOST,
         "modele_generation": MODELE_GENERATION,
         "modele_embedding": MODELE_EMBEDDING,
-        "produits_indexes": _COLLECTION.count(),
+        "produits_indexes": collection().count(),
         "detail": detail,
     }
 
@@ -155,7 +172,7 @@ def chat(requete: ChatRequest):
     # plutôt qu'une erreur en plein milieu du stream.
     try:
         question_recherche = reformuler_question(requete.question, historique)
-        candidats = recherche_semantique(question_recherche, _COLLECTION)
+        candidats = recherche_semantique(question_recherche, collection())
     except (ConnectionError, RuntimeError) as e:
         raise HTTPException(status_code=503, detail=str(e))
 

@@ -20,6 +20,10 @@ Points clés :
 - La collection est VIDÉE puis recréée à chaque ingestion complète, pour éviter
   de garder des entrées d'un ancien format devenu invalide.
 
+Les chemins (catalogue, base ChromaDB) et l'URL d'Ollama sont configurables par
+variables d'environnement (voir config.py) : CATALOGUE_PATH, CHROMA_PATH,
+OLLAMA_HOST. Sans rien définir, les valeurs par défaut sont celles du projet.
+
 Usage :
     python backend/ingestion.py            # (ré)ingère le catalogue
     python backend/ingestion.py --check    # affiche ce qui est indexé
@@ -31,14 +35,10 @@ import os
 import sys
 
 import chromadb
-import ollama
 
-# --------------------------------------------------------------------------
-# Configuration
-# --------------------------------------------------------------------------
-RACINE_PROJET = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CHEMIN_CATALOGUE = os.path.join(RACINE_PROJET, "data", "catalogue.json")
-CHEMIN_CHROMA = os.path.join(RACINE_PROJET, "chroma_db")
+# Chemins et client Ollama viennent de config.py (surchargables par variables
+# d'environnement ; les défauts reproduisent le comportement historique).
+from config import CHEMIN_CATALOGUE, CHEMIN_CHROMA, OLLAMA_HOST, client_ollama
 
 MODELE_EMBEDDING = "qwen3-embedding:0.6b"
 NOM_COLLECTION = "produits"
@@ -116,10 +116,10 @@ def reinitialiser_collection():
 def generer_embeddings(textes):
     """Encode une liste de textes avec le modèle d'embedding Ollama."""
     try:
-        reponse = ollama.embed(model=MODELE_EMBEDDING, input=textes)
+        reponse = client_ollama.embed(model=MODELE_EMBEDDING, input=textes)
     except Exception as e:
         raise ConnectionError(
-            "Impossible de générer les embeddings via Ollama.\n"
+            f"Impossible de générer les embeddings via Ollama ({OLLAMA_HOST}).\n"
             "Vérifie qu'Ollama tourne (ollama serve) et que le modèle "
             f"'{MODELE_EMBEDDING}' est installé.\n"
             f"Détail : {e}"

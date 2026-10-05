@@ -1,0 +1,81 @@
+# ---------------------------------------------------------------------------
+# Pile complète du projet : ingestion -> API -> frontend.
+#
+# Ollama N'EST PAS conteneurisé : il reste sur la machine hôte pour garder
+# l'accès au GPU. Les conteneurs l'atteignent via host.docker.internal, ce qui
+# impose `extra_hosts: host-gateway` sous Linux (l'alias n'y est pas natif).
+# Prérequis : Ollama lancé avec OLLAMA_HOST=0.0.0.0 (voir README).
+# ---------------------------------------------------------------------------
+
+services:
+  # --- Indexation du catalogue dans ChromaDB (one-shot) ---
+  # Tourne jusqu'au bout puis s'arrête. Idempotent : la collection est
+  # recréée et les produits upsertés sur leur id, donc relancer `up` ne
+  # duplique rien. Échoue avec un message explicite si Ollama est injoignable
+  # (ConnectionError -> exit 1), ce qui bloque le démarrage de l'API.
+  ingest:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "ingestion.py"]
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11434
+      CHROMA_PATH: /app/chroma_db
+      CATALOGUE_PATH: /app/data/catalogue.json
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - chroma_data:/app/chroma_db
+    restart: "no"
+
+  # --- API FastAPI ---
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      ingest:
+        condition: service_completed_successfully
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11434
+      CHROMA_PATH: /app/chroma_db
+      CATALOGUE_PATH: /app/data/catalogue.json
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Même volume que l'ingestion : l'API lit l'index qui vient d'être écrit.
+      - chroma_data:/app/chroma_db
+    ports:
+      - "8000:8000"
+    healthcheck:
+      # L'image slim n'embarque ni curl ni wget : on teste avec urllib.
+      test:
+        - "CMD"
+        - "python"
+        - "-c"
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health', timeout=5).status == 200 else 1)"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # --- Frontend statique (nginx) ---
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Inlinée dans le bundle au build : c'est l'URL que le NAVIGATEUR
+        # appellera, donc le port publié par le service api sur l'hôte.
+        VITE_API_URL: http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      # Port hôte 5173 : déjà présent dans la liste CORS du backend.
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  chroma_data:

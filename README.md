@@ -75,6 +75,7 @@ Flux d'une requête :
 | API | FastAPI + uvicorn, validation Pydantic, `StreamingResponse` |
 | Frontend | React 18, Vite 5, React Router 6, Tailwind CSS 4, react-markdown |
 | Environnement Python | Python 3.11 (conda `rag-qwen`) |
+| Conteneurisation | Docker Compose : image backend `python:3.11-slim`, frontend en multi-stage Node → nginx |
 | Données | `data/catalogue.json` — 30 produits `{id, description}` |
 
 ## Choix techniques
@@ -107,7 +108,8 @@ chemins de génération à maintenir.
 ## Prérequis et installation
 
 - [Ollama](https://ollama.com) installé et lancé (`ollama serve`, `localhost:11434`)
-- Python 3.11 et Node.js 18+
+- Docker et Docker Compose v2 — pour le lancement conteneurisé
+- Python 3.11 et Node.js 18+ — pour le lancement manuel uniquement
 - Matériel testé : GPU 8 Go de VRAM (`qwen3:8b` quantifié + modèle d'embedding)
 
 ```bash
@@ -115,12 +117,12 @@ chemins de génération à maintenir.
 ollama pull qwen3:8b
 ollama pull qwen3-embedding:0.6b
 
-# 2. Environnement Python
+# 2. Environnement Python (lancement manuel ; inutile avec Docker Compose)
 conda create -n rag-qwen python=3.11 -y
 conda activate rag-qwen
-pip install ollama chromadb fastapi uvicorn pydantic
+pip install -r backend/requirements.txt
 
-# 3. Frontend
+# 3. Frontend (lancement manuel ; inutile avec Docker Compose)
 cd frontend
 npm install
 echo "VITE_API_URL=http://localhost:8000" > .env   # non versionné
@@ -128,6 +130,47 @@ cd ..
 ```
 
 ## Lancement
+
+### Avec Docker Compose (méthode principale)
+
+Ollama n'est **pas** conteneurisé : il reste sur la machine hôte pour garder l'accès
+au GPU. Les conteneurs le joignent via `host.docker.internal`, ce qui suppose
+qu'Ollama écoute sur toutes les interfaces et non seulement sur la boucle locale :
+
+```bash
+# Prérequis : Ollama doit écouter sur 0.0.0.0
+#   - lancement ponctuel :
+OLLAMA_HOST=0.0.0.0 ollama serve
+#   - ou, pour le service systemd, ajouter dans `systemctl edit ollama` :
+#       [Service]
+#       Environment="OLLAMA_HOST=0.0.0.0:11434"
+```
+
+> **Implication de sécurité.** Avec `OLLAMA_HOST=0.0.0.0`, Ollama est joignable par
+> toute machine du réseau local, **sans aucune authentification** : n'importe qui sur
+> le même réseau peut interroger les modèles et consommer le GPU. À réserver à un
+> réseau de confiance, ou à restreindre par pare-feu (par exemple n'autoriser que
+> l'interface `docker0`). Sur la boucle locale seule (`127.0.0.1`), les conteneurs ne
+> peuvent pas atteindre Ollama.
+
+```bash
+docker compose up --build
+```
+
+Puis : <http://localhost:5173> (frontend) et <http://localhost:8000/health> (API).
+
+Le service `ingest` s'exécute une seule fois, indexe le catalogue dans un volume
+nommé (`chroma_data`) et s'arrête ; `api` ne démarre qu'après sa réussite
+(`service_completed_successfully`). Si Ollama est injoignable, `ingest` échoue avec
+un message explicite et la pile ne démarre pas.
+
+```bash
+docker compose logs -f api      # suivre les logs de l'API
+docker compose down             # arrêter (le volume ChromaDB est conservé)
+docker compose down -v          # arrêter et supprimer l'index
+```
+
+### Lancement manuel (alternative)
 
 ```bash
 # 1. Indexer le catalogue dans ChromaDB (une fois, ou après modification du catalogue)
@@ -137,11 +180,15 @@ python backend/ingestion.py          # --check pour seulement inspecter l'index
 # 2. Backend (terminal 1) — depuis backend/, les imports sont relatifs au dossier
 cd backend && uvicorn api:app --reload --port 8000
 
-# 3. Frontend (terminal 2)
+# 3. Frontend (lancement manuel ; inutile avec Docker Compose) (terminal 2)
 cd frontend && npm run dev           # http://localhost:5173
 ```
 
-Debug en ligne de commande, sans frontend :
+Ce mode n'exige aucune variable d'environnement : les valeurs par défaut pointent sur
+`http://localhost:11434`, `./chroma_db` et `./data/catalogue.json`. Les réglages
+surchargeables sont documentés dans `.env.example`.
+
+### Debug en ligne de commande, sans frontend
 
 ```bash
 python backend/rag_pipeline.py       # boucle interactive, affiche les étapes
@@ -170,12 +217,11 @@ CORS autorisé pour `http://localhost:3000` et `http://localhost:5173`.
   en *chunks* (une description = un document), `top_k` fixé à 5.
 - Aucune évaluation chiffrée du retrieval ni de la génération à ce stade : la
   validation est manuelle (`backend/test_stream.py` et la CLI de debug).
-- Pas de CI, pas de tests automatisés, pas de `requirements.txt` figé.
+- Pas de CI ni de tests automatisés.
 - Pas d'authentification ni de limitation de débit sur l'API.
 
 ## Roadmap (à venir)
 
-- Conteneurisation avec Docker Compose (API, frontend, Ollama).
 - Jeu d'évaluation du retrieval : paires question/produit attendu et mesure du
   recall@k pour comparer modèles d'embedding et valeurs de `top_k`.
 - CI GitHub Actions : lint et tests du pipeline sur un double d'Ollama.

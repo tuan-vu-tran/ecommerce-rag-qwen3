@@ -29,8 +29,8 @@ Usage :
 import json
 import sys
 
-import ollama
-
+# Client Ollama partagé (URL pilotée par OLLAMA_HOST, voir config.py).
+from config import OLLAMA_HOST, client_ollama
 # On réutilise la config et l'accès collection de l'ingestion (cohérence :
 # même dossier ChromaDB, même modèle d'embedding).
 from ingestion import (
@@ -115,7 +115,7 @@ def reformuler_question(question, historique):
         question=question,
     )
     try:
-        reponse = ollama.chat(
+        reponse = client_ollama.chat(
             model=MODELE_GENERATION,
             messages=[{"role": "user", "content": prompt}],
             think=False,
@@ -135,10 +135,11 @@ def reformuler_question(question, historique):
 def embed_question(question):
     """Encode la question avec le MÊME modèle qu'à l'ingestion (cohérence !)."""
     try:
-        reponse = ollama.embed(model=MODELE_EMBEDDING, input=question)
+        reponse = client_ollama.embed(model=MODELE_EMBEDDING, input=question)
     except Exception as e:
         raise ConnectionError(
-            f"Impossible d'encoder la question via '{MODELE_EMBEDDING}'.\n"
+            f"Impossible d'encoder la question via '{MODELE_EMBEDDING}' "
+            f"({OLLAMA_HOST}).\n"
             f"Détail : {e}"
         )
     return reponse["embeddings"][0]
@@ -326,7 +327,7 @@ def generer_reponse_stream(question, produits, historique=None):
     ids_valides = {p["id"] for p in produits}
 
     try:
-        flux = ollama.chat(
+        flux = client_ollama.chat(
             model=MODELE_GENERATION,
             messages=messages,
             think=False,     # désactive le mode raisonnement de Qwen3
@@ -334,7 +335,9 @@ def generer_reponse_stream(question, produits, historique=None):
             stream=True,     # <-- streaming token par token
         )
     except Exception as e:
-        raise ConnectionError(f"Ollama injoignable pour la génération.\nDétail : {e}")
+        raise ConnectionError(
+            f"Ollama injoignable pour la génération ({OLLAMA_HOST}).\nDétail : {e}"
+        )
 
     buffer = ""            # tout le texte reçu du modèle
     deja_emis = 0          # longueur du texte déjà diffusé au client
