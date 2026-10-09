@@ -31,8 +31,7 @@ from ingestion import (
 from rag_pipeline import (
     MODELE_GENERATION,
     generer_reponse_stream,
-    recherche_semantique,
-    reformuler_question,
+    preparer_recherche,
 )
 
 # --------------------------------------------------------------------------
@@ -170,9 +169,11 @@ def chat(requete: ChatRequest):
     # Étapes NON streamées (reformulation + recherche) faites AVANT d'ouvrir le
     # flux : ainsi une panne Ollama / collection vide renvoie un vrai code 503
     # plutôt qu'une erreur en plein milieu du stream.
+    # `preparer_recherche` = exactement ces deux étapes, partagées avec la CLI et
+    # avec `evaluer_question` (eval/run_eval.py) : une seule implémentation du
+    # pipeline. Les paramètres gardent leurs valeurs par défaut de production.
     try:
-        question_recherche = reformuler_question(requete.question, historique)
-        candidats = recherche_semantique(question_recherche, collection())
+        _, candidats = preparer_recherche(requete.question, historique, collection())
     except (ConnectionError, RuntimeError) as e:
         raise HTTPException(status_code=503, detail=str(e))
 

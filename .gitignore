@@ -7,3 +7,9 @@ dist/
 .env
 .env.local
 CLAUDE.md
+
+# Resultats d'evaluation : les JSON detailles sont volumineux (traces completes
+# de chaque run) et regenerables -> non versionnes. Les syntheses .md sont
+# gardees : ce sont elles qui documentent l'evolution des scores.
+eval/results/*.json
+!eval/results/*.md

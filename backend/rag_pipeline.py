@@ -28,6 +28,7 @@ Usage :
 
 import json
 import sys
+import time
 
 # Client Ollama partagé (URL pilotée par OLLAMA_HOST, voir config.py).
 from config import OLLAMA_HOST, client_ollama
@@ -42,6 +43,25 @@ MODELE_GENERATION = "qwen3:8b"
 
 # Nombre de produits candidats remontés par la recherche sémantique.
 NB_RESULTATS = 5
+
+# Températures par défaut (valeurs historiques du projet : ne pas changer, elles
+# définissent le comportement de production). Elles sont désormais des
+# PARAMÈTRES de fonction, pour qu'un harnais d'évaluation puisse forcer
+# temperature=0 + seed fixe sans toucher au code de production.
+TEMPERATURE_REFORMULATION = 0
+TEMPERATURE_GENERATION = 0.3
+
+
+def _options_ollama(temperature, seed=None):
+    """
+    Construit le dict `options` passé à Ollama.
+    `seed` n'est inclus que s'il est fourni : sans seed, le comportement est
+    exactement celui d'avant (aucune option supplémentaire).
+    """
+    options = {"temperature": temperature}
+    if seed is not None:
+        options["seed"] = seed
+    return options
 
 
 # ==========================================================================
@@ -100,7 +120,13 @@ def _historique_en_texte(historique):
     return "\n".join(lignes)
 
 
-def reformuler_question(question, historique):
+def reformuler_question(
+    question,
+    historique,
+    modele=MODELE_GENERATION,
+    temperature=TEMPERATURE_REFORMULATION,
+    seed=None,
+):
     """
     Si un historique est présent, on demande à qwen3:8b de transformer le
     message courant (souvent elliptique, ex: "et moins cher ?") en une question
@@ -116,10 +142,10 @@ def reformuler_question(question, historique):
     )
     try:
         reponse = client_ollama.chat(
-            model=MODELE_GENERATION,
+            model=modele,
             messages=[{"role": "user", "content": prompt}],
             think=False,
-            options={"temperature": 0},
+            options=_options_ollama(temperature, seed),
         )
         reformulee = reponse["message"]["content"].strip().strip('"')
         # Filet de sécurité : si la reformulation est vide, on garde l'original.
@@ -132,24 +158,34 @@ def reformuler_question(question, historique):
 # ==========================================================================
 # Étape 1 : recherche sémantique pure
 # ==========================================================================
-def embed_question(question):
+def embed_question(question, modele_embedding=MODELE_EMBEDDING):
     """Encode la question avec le MÊME modèle qu'à l'ingestion (cohérence !)."""
     try:
-        reponse = client_ollama.embed(model=MODELE_EMBEDDING, input=question)
+        reponse = client_ollama.embed(model=modele_embedding, input=question)
     except Exception as e:
         raise ConnectionError(
-            f"Impossible d'encoder la question via '{MODELE_EMBEDDING}' "
+            f"Impossible d'encoder la question via '{modele_embedding}' "
             f"({OLLAMA_HOST}).\n"
             f"Détail : {e}"
         )
     return reponse["embeddings"][0]
 
 
-def recherche_semantique(question, collection=None):
+def recherche_semantique(
+    question,
+    collection=None,
+    top_k=NB_RESULTATS,
+    modele_embedding=MODELE_EMBEDDING,
+    durees=None,
+):
     """
-    Transforme la question en embedding et récupère les NB_RESULTATS produits
-    les plus proches sémantiquement. Aucun filtre : recherche 100% sémantique.
+    Transforme la question en embedding et récupère les `top_k` produits les
+    plus proches sémantiquement. Aucun filtre : recherche 100% sémantique.
     Renvoie une liste de dicts {id, description, distance}.
+
+    `durees` : dict optionnel rempli SUR PLACE avec le temps (en secondes) des
+    deux sous-étapes — "embedding" et "recherche_chroma". Purement
+    observationnel : passer None (défaut) ne change rien au comportement.
     """
     if collection is None:
         collection = obtenir_collection()
@@ -160,11 +196,18 @@ def recherche_semantique(question, collection=None):
             "Lance d'abord : python backend/ingestion.py"
         )
 
-    vecteur = embed_question(question)
+    debut = time.perf_counter()
+    vecteur = embed_question(question, modele_embedding=modele_embedding)
+    if durees is not None:
+        durees["embedding"] = time.perf_counter() - debut
+
+    debut = time.perf_counter()
     resultats = collection.query(
         query_embeddings=[vecteur],
-        n_results=NB_RESULTATS,
+        n_results=top_k,
     )
+    if durees is not None:
+        durees["recherche_chroma"] = time.perf_counter() - debut
 
     produits = []
     if resultats["ids"] and resultats["ids"][0]:
@@ -195,8 +238,8 @@ boutique. Tu réponds toujours en français.
 Règles absolues, à respecter sans exception :
 
 1. RESTE STRICTEMENT DANS TON RÔLE. Tu ne réponds QU'aux questions liées au choix
-   d'un produit informatique/high-tech de notre catalogue (ordinateurs, laptops,
-   téléphones, tablettes, accessoires...).
+   d'un produit informatique/high-tech de notre catalogue (ordinateurs portables et
+   smartphones).
    Si la question n'est PAS liée à ce choix (culture générale, géographie, météo,
    cuisine, blague, ou tout autre sujet), tu NE DOIS PAS répondre à la question
    posée, même partiellement ou brièvement. Tu IGNORES complètement le sujet de la
@@ -212,12 +255,36 @@ Règles absolues, à respecter sans exception :
    n'inventes jamais un produit, un prix ou une caractéristique qui ne figure pas
    dans le contexte fourni. Utilise les id EXACTS des candidats.
 
-3. SOIS HONNÊTE. Si aucun des produits candidats ne correspond réellement au besoin
-   du client (par exemple s'il demande un type de produit absent du catalogue, comme
-   un vélo, un électroménager, etc.), dis-le clairement et poliment, sans forcer une
-   recommandation. Dans ce cas le tableau des produits est vide.
+3. PÉRIMÈTRE RÉEL DU CATALOGUE. Notre catalogue ne contient QUE deux catégories de
+   produits : des ORDINATEURS PORTABLES et des SMARTPHONES. Rien d'autre. Tu
+   n'affirmes JAMAIS que la boutique vend, propose ou dispose d'une autre catégorie
+   de produit, quelle qu'elle soit. Ne dis jamais « oui, nous proposons… » pour un
+   type d'article qui n'est ni un ordinateur portable ni un smartphone.
 
-4. JUSTIFIE. Quand tu recommandes un produit, appuie chaque raison sur des éléments
+4. VÉRIFIE LA CATÉGORIE DEMANDÉE, PAS LES CRITÈRES. Cette vérification porte
+   UNIQUEMENT sur la CATÉGORIE de produit demandée par le client : ordinateur
+   portable, smartphone, ou une catégorie absente du catalogue. Tu ne recommandes un
+   candidat que s'il appartient bien à la catégorie demandée.
+   En revanche, le degré d'adéquation d'un candidat aux CRITÈRES exprimés par le
+   client ne doit JAMAIS motiver un refus ni une absence de recommandation. Dès lors
+   que des candidats relèvent de la catégorie demandée, tu recommandes les plus
+   pertinents dont tu disposes, même si aucun ne satisfait tous les critères, et tu
+   signales honnêtement les écarts.
+
+5. SOIS HONNÊTE QUAND LE TYPE DEMANDÉ EST ABSENT. Si le client demande un type
+   d'article qui ne figure pas dans les candidats fournis, tu dois :
+   - dire clairement et poliment que ce type de produit n'est PAS au catalogue ;
+   - ne recommander AUCUN produit (tableau JSON vide : []) ;
+   - proposer ton aide pour choisir un ordinateur portable ou un smartphone.
+   Cela s'applique à TOUT type d'article hors de ces deux catégories, même s'il est
+   proche de l'informatique ou du high-tech.
+
+6. PAS D'ASSOCIATION AVEC L'ABSENT. Tu ne suggères JAMAIS qu'un produit du catalogue
+   « peut s'associer à », « est compatible avec », « fonctionne avec » ou « se
+   complète avec » un article qui n'est pas au catalogue. Ne mentionne pas d'articles
+   que nous ne vendons pas comme s'ils faisaient partie de notre offre.
+
+7. JUSTIFIE. Quand tu recommandes un produit, appuie chaque raison sur des éléments
    CONCRETS de sa description (prix, caractéristiques techniques, usage).
 
 MISE EN FORME DU TEXTE (quand tu présentes un ou plusieurs produits) :
@@ -296,7 +363,14 @@ def _parser_produits(texte_apres_marqueur, ids_valides):
     return produits
 
 
-def generer_reponse_stream(question, produits, historique=None):
+def generer_reponse_stream(
+    question,
+    produits,
+    historique=None,
+    modele=MODELE_GENERATION,
+    temperature=TEMPERATURE_GENERATION,
+    seed=None,
+):
     """
     Version STREAMING de la génération. C'est un générateur qui `yield` des
     fragments de texte au fil de l'eau :
@@ -328,10 +402,10 @@ def generer_reponse_stream(question, produits, historique=None):
 
     try:
         flux = client_ollama.chat(
-            model=MODELE_GENERATION,
+            model=modele,
             messages=messages,
             think=False,     # désactive le mode raisonnement de Qwen3
-            options={"temperature": 0.3},
+            options=_options_ollama(temperature, seed),
             stream=True,     # <-- streaming token par token
         )
     except Exception as e:
@@ -387,14 +461,28 @@ def generer_reponse_stream(question, produits, historique=None):
     yield json.dumps(produits_reco, ensure_ascii=False)
 
 
-def generer_reponse(question, produits, historique=None):
+def generer_reponse(
+    question,
+    produits,
+    historique=None,
+    modele=MODELE_GENERATION,
+    temperature=TEMPERATURE_GENERATION,
+    seed=None,
+):
     """
     Version NON-streaming (pour la CLI de debug et les tests). Elle consomme
     entièrement `generer_reponse_stream` puis reconstruit le dict structuré
     {"reponse_texte", "produits_recommandes"} en coupant sur le marqueur.
     Ainsi le streaming reste l'unique source de vérité de la génération.
     """
-    texte = "".join(generer_reponse_stream(question, produits, historique=historique))
+    texte = "".join(generer_reponse_stream(
+        question,
+        produits,
+        historique=historique,
+        modele=modele,
+        temperature=temperature,
+        seed=seed,
+    ))
     avant, sep, apres = texte.partition(MARQUEUR_PRODUITS)
     reponse_texte = avant.strip()
 
@@ -419,27 +507,92 @@ def generer_reponse(question, produits, historique=None):
 # ==========================================================================
 # Orchestration complète (utilisée par la CLI ET, plus tard, par l'API)
 # ==========================================================================
-def repondre(question, historique=None, collection=None, debug=False):
+def preparer_recherche(
+    question,
+    historique=None,
+    collection=None,
+    top_k=NB_RESULTATS,
+    modele_generation=MODELE_GENERATION,
+    modele_embedding=MODELE_EMBEDDING,
+    temperature_reformulation=TEMPERATURE_REFORMULATION,
+    seed=None,
+    durees=None,
+):
     """
-    Exécute le pipeline complet et renvoie un dict :
-      {
-        "question_recherche": "...",  # question reformulée utilisée pour la recherche
-        "candidats": [...],           # 5 produits les plus proches (debug)
-        "reponse": {"reponse_texte": ..., "produits_recommandes": [...]}
-      }
-    `historique` : liste optionnelle de messages [{role, content}] de la conversation.
-    Si debug=True, affiche les étapes intermédiaires.
+    Étapes 0 et 1 du pipeline (NON streamées) : reformulation puis recherche
+    sémantique. Renvoie (question_recherche, candidats).
+
+    Factorisé ici parce que TROIS appelants ont besoin exactement de ces deux
+    étapes, dans cet ordre, avant la génération :
+      - `repondre()` / `repondre_stream()` (CLI + API)
+      - `api.py::chat()` qui les exécute AVANT d'ouvrir le flux pour pouvoir
+        renvoyer un vrai 503 (les exceptions ConnectionError / RuntimeError
+        remontent donc telles quelles, comme avant)
+      - `evaluer_question()` (harnais d'évaluation)
+    Aucun appelant ne réimplémente le pipeline.
+
+    `durees` : dict optionnel rempli sur place ("reformulation", "embedding",
+    "recherche_chroma"). Sans lui, comportement identique à l'historique.
     """
     if collection is None:
         collection = obtenir_collection()
 
     # 0. Reformulation en question autonome si un historique est présent
-    question_recherche = reformuler_question(question, historique)
+    debut = time.perf_counter()
+    question_recherche = reformuler_question(
+        question,
+        historique,
+        modele=modele_generation,
+        temperature=temperature_reformulation,
+        seed=seed,
+    )
+    if durees is not None:
+        durees["reformulation"] = time.perf_counter() - debut
+
+    # 1. Recherche sémantique pure (sur la question reformulée)
+    candidats = recherche_semantique(
+        question_recherche,
+        collection,
+        top_k=top_k,
+        modele_embedding=modele_embedding,
+        durees=durees,
+    )
+    return question_recherche, candidats
+
+
+def repondre(
+    question,
+    historique=None,
+    collection=None,
+    debug=False,
+    top_k=NB_RESULTATS,
+    modele_generation=MODELE_GENERATION,
+    modele_embedding=MODELE_EMBEDDING,
+    temperature=TEMPERATURE_GENERATION,
+    seed=None,
+):
+    """
+    Exécute le pipeline complet et renvoie un dict :
+      {
+        "question_recherche": "...",  # question reformulée utilisée pour la recherche
+        "candidats": [...],           # top_k produits les plus proches (debug)
+        "reponse": {"reponse_texte": ..., "produits_recommandes": [...]}
+      }
+    `historique` : liste optionnelle de messages [{role, content}] de la conversation.
+    Si debug=True, affiche les étapes intermédiaires.
+    """
+    question_recherche, candidats = preparer_recherche(
+        question,
+        historique=historique,
+        collection=collection,
+        top_k=top_k,
+        modele_generation=modele_generation,
+        modele_embedding=modele_embedding,
+        seed=seed,
+    )
     if debug and question_recherche != question:
         print(f"\n[0] Question reformulée pour la recherche : \"{question_recherche}\"")
 
-    # 1. Recherche sémantique pure (sur la question reformulée)
-    candidats = recherche_semantique(question_recherche, collection)
     if debug:
         print(f"\n[1] Recherche sémantique — {len(candidats)} candidat(s) :")
         for c in candidats:
@@ -447,7 +600,14 @@ def repondre(question, historique=None, collection=None, debug=False):
             print(f"    · id={c['id']:<7} distance={c['distance']:.4f}  {extrait}...")
 
     # 2. Génération de la réponse finale (avec l'historique conversationnel)
-    reponse = generer_reponse(question, candidats, historique=historique)
+    reponse = generer_reponse(
+        question,
+        candidats,
+        historique=historique,
+        modele=modele_generation,
+        temperature=temperature,
+        seed=seed,
+    )
     if debug:
         print("\n[2] Réponse finale structurée :")
         print(json.dumps(reponse, ensure_ascii=False, indent=2))
@@ -459,7 +619,16 @@ def repondre(question, historique=None, collection=None, debug=False):
     }
 
 
-def repondre_stream(question, historique=None, collection=None):
+def repondre_stream(
+    question,
+    historique=None,
+    collection=None,
+    top_k=NB_RESULTATS,
+    modele_generation=MODELE_GENERATION,
+    modele_embedding=MODELE_EMBEDDING,
+    temperature=TEMPERATURE_GENERATION,
+    seed=None,
+):
     """
     Version STREAMING de `repondre`, utilisée par l'endpoint /chat.
 
@@ -471,12 +640,126 @@ def repondre_stream(question, historique=None, collection=None):
     collection vide) sont levées dès le premier `next()`. Pour renvoyer un code
     HTTP propre, l'API fait la recherche AVANT d'ouvrir le flux (voir api.py).
     """
-    if collection is None:
-        collection = obtenir_collection()
+    _, candidats = preparer_recherche(
+        question,
+        historique=historique,
+        collection=collection,
+        top_k=top_k,
+        modele_generation=modele_generation,
+        modele_embedding=modele_embedding,
+        seed=seed,
+    )
+    yield from generer_reponse_stream(
+        question,
+        candidats,
+        historique=historique,
+        modele=modele_generation,
+        temperature=temperature,
+        seed=seed,
+    )
 
-    question_recherche = reformuler_question(question, historique)
-    candidats = recherche_semantique(question_recherche, collection)
-    yield from generer_reponse_stream(question, candidats, historique=historique)
+
+# ==========================================================================
+# Point d'observation pour l'évaluation (eval/run_eval.py)
+# ==========================================================================
+def evaluer_question(
+    question,
+    historique=None,
+    collection=None,
+    top_k=NB_RESULTATS,
+    modele_generation=MODELE_GENERATION,
+    modele_embedding=MODELE_EMBEDDING,
+    temperature=TEMPERATURE_GENERATION,
+    seed=None,
+):
+    """
+    Exécute le pipeline COMPLET sur une question et renvoie une trace détaillée,
+    pour un harnais d'évaluation hors-ligne.
+
+    Ce n'est PAS un second pipeline : la fonction appelle exactement les mêmes
+    briques que la production (`preparer_recherche` puis `generer_reponse`, qui
+    consomme lui-même `generer_reponse_stream`). Le streaming reste l'unique
+    source de vérité de la génération ; on ne fait qu'instrumenter le temps et
+    conserver les états intermédiaires.
+
+    Paramètres (aucune valeur codée en dur : les défauts reproduisent la prod) :
+        top_k               nombre de candidats remontés de ChromaDB
+        modele_generation   modèle Ollama de génération / reformulation
+        modele_embedding    modèle Ollama d'embedding (doit être celui de
+                            l'ingestion, sinon la recherche n'a aucun sens)
+        temperature         température de génération (0 pour une évaluation
+                            reproductible ; 0.3 en production)
+        seed                seed Ollama (None = pas d'option seed, comme en prod)
+
+    Renvoie :
+      {
+        "question": "...",                 # question d'origine
+        "question_reformulee": "...",       # question réellement envoyée à la recherche
+        "reformulation_appliquee": bool,    # True si elle diffère de l'originale
+        "candidats": [{"id", "distance", "rang"}],   # dans l'ordre ChromaDB
+        "reponse_texte": "...",
+        "produits_recommandes": [{"id", "raison"}],
+        "ids_recommandes": ["..."],
+        "durees": {"reformulation", "embedding", "recherche_chroma",
+                   "generation", "total"},             # en secondes
+        "parametres": {...},                            # config effective du run
+      }
+    """
+    durees = {"reformulation": 0.0, "embedding": 0.0, "recherche_chroma": 0.0}
+    debut_total = time.perf_counter()
+
+    # Étapes 0 + 1 : mêmes appels que l'API, avec chronométrage.
+    question_recherche, candidats = preparer_recherche(
+        question,
+        historique=historique,
+        collection=collection,
+        top_k=top_k,
+        modele_generation=modele_generation,
+        modele_embedding=modele_embedding,
+        seed=seed,
+        durees=durees,
+    )
+
+    # Étape 2 : génération. `generer_reponse` consomme le flux en interne et
+    # reconstruit {reponse_texte, produits_recommandes} en coupant sur le
+    # marqueur ---PRODUITS--- : on obtient la réponse complète sans dupliquer
+    # la logique de parsing.
+    debut = time.perf_counter()
+    reponse = generer_reponse(
+        question,
+        candidats,
+        historique=historique,
+        modele=modele_generation,
+        temperature=temperature,
+        seed=seed,
+    )
+    durees["generation"] = time.perf_counter() - debut
+    durees["total"] = time.perf_counter() - debut_total
+
+    produits_reco = reponse["produits_recommandes"]
+
+    return {
+        "question": question,
+        "question_reformulee": question_recherche,
+        "reformulation_appliquee": question_recherche != question,
+        # On ne garde pas la description complète (volumineuse) : id + distance
+        # + rang suffisent pour diagnostiquer la recherche.
+        "candidats": [
+            {"id": c["id"], "distance": c["distance"], "rang": i + 1}
+            for i, c in enumerate(candidats)
+        ],
+        "reponse_texte": reponse["reponse_texte"],
+        "produits_recommandes": produits_reco,
+        "ids_recommandes": [str(p.get("id", "")) for p in produits_reco],
+        "durees": durees,
+        "parametres": {
+            "top_k": top_k,
+            "modele_generation": modele_generation,
+            "modele_embedding": modele_embedding,
+            "temperature": temperature,
+            "seed": seed,
+        },
+    }
 
 
 # ==========================================================================
