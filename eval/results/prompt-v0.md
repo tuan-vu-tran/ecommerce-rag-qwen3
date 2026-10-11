@@ -1,10 +1,10 @@
-# Évaluation RAG e-commerce — `fix-prompt-v2`
+# Évaluation RAG e-commerce — `prompt-v0`
 
 ## Configuration du run
 
 | paramètre | valeur |
 | --- | --- |
-| label | `fix-prompt-v2` |
+| label | `prompt-v0` |
 | split | `dev` |
 | questions | `30` |
 | runs | `3` |
@@ -15,8 +15,8 @@
 | seed | `42` |
 | ollama_host | `http://localhost:11434` |
 | produits_indexes | `30` |
-| horodatage | `2026-10-06T12:50:15` |
-| duree_totale_s | `686.4` |
+| horodatage | `2026-10-06T06:21:11` |
+| duree_totale_s | `674.5` |
 
 Le pipeline est appelé via `rag_pipeline.evaluer_question()`, qui enchaîne
 les mêmes briques que la route `/chat` (`preparer_recherche` puis
@@ -31,43 +31,43 @@ Moyenne sur **3 runs** (± écart-type, min, max).
 | métrique | valeur | dénominateur |
 | --- | --- | --- |
 | hit@top_k | 91.3% (±0.0%, min 91.3%, max 91.3%) | 23 questions avec `expected_ids` |
-| précision finale | 81.2% (±2.5%, min 78.3%, max 82.6%) | 23 questions avec `expected_ids` |
-| taux d'erreur grave | 6.7% (±0.0%, min 6.7%, max 6.7%) | 30 questions |
-| refus correct | 100.0% (±0.0%, min 100.0%, max 100.0%) | 7 questions `must_refuse` |
+| précision finale | 82.6% (±0.0%, min 82.6%, max 82.6%) | 23 questions avec `expected_ids` |
+| taux d'erreur grave | 1.1% (±1.9%, min 0.0%, max 3.3%) | 30 questions |
+| refus correct | 85.7% (±0.0%, min 85.7%, max 85.7%) | 7 questions `must_refuse` |
 | hallucinations | 0 (±0, min 0, max 0) | ids recommandés hors catalogue |
-| échecs | 4.33 (±0.58, min 4, max 5) | questions avec ≥1 raison d'échec |
+| échecs | 5 (±0, min 5, max 5) | questions avec ≥1 raison d'échec |
 
 ## Latence
 
 | étape | valeur |
 | --- | --- |
-| total — médiane | 7.43s (±0.35s, min 7.17s, max 7.84s) |
-| total — moyenne | 7.63s (±0.33s, min 7.40s, max 8.01s) |
-| total — p95 | 15.78s (±0.73s, min 15.00s, max 16.43s) |
+| total — médiane | 7.10s (±0.10s, min 6.98s, max 7.17s) |
+| total — moyenne | 7.49s (±0.10s, min 7.40s, max 7.59s) |
+| total — p95 | 13.60s (±0.28s, min 13.43s, max 13.93s) |
 | reformulation — médiane | 0.00s (±0.00s, min 0.00s, max 0.00s) |
 | embedding — médiane | 0.16s (±0.00s, min 0.16s, max 0.17s) |
 | recherche ChromaDB — médiane | 0.00s (±0.00s, min 0.00s, max 0.00s) |
-| génération — médiane | 7.17s (±0.42s, min 6.79s, max 7.62s) |
+| génération — médiane | 6.79s (±0.07s, min 6.72s, max 6.86s) |
 
 ## Par type
 
 | groupe | n | hit@top_k | précision | err. grave | refus | halluc. | échecs | latence méd. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `precise` | 9 | 88.9% | 85.2% | 0.0% | n/a | 0 | 1.33 | 8.79s |
-| `vague` | 5 | 100.0% | 100.0% | 0.0% | n/a | 0 | 0 | 14.72s |
-| `situational` | 5 | 100.0% | 100.0% | 0.0% | n/a | 0 | 0 | 9.94s |
-| `followup` | 4 | 75.0% | 25.0% | 50.0% | n/a | 0 | 3 | 6.07s |
-| `out_of_scope` | 4 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.31s |
-| `not_in_catalogue` | 2 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.97s |
-| `injection` | 1 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.34s |
+| `precise` | 9 | 88.9% | 88.9% | 0.0% | n/a | 0 | 1 | 9.27s |
+| `vague` | 5 | 100.0% | 100.0% | 0.0% | n/a | 0 | 0 | 11.76s |
+| `situational` | 5 | 100.0% | 100.0% | 0.0% | n/a | 0 | 0 | 6.76s |
+| `followup` | 4 | 75.0% | 25.0% | 8.3% | n/a | 0 | 3 | 6.16s |
+| `out_of_scope` | 4 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.45s |
+| `not_in_catalogue` | 2 | n/a | n/a | 0.0% | 50.0% | 0 | 1 | 5.13s |
+| `injection` | 1 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.72s |
 
 ## Par split
 
 | groupe | n | hit@top_k | précision | err. grave | refus | halluc. | échecs | latence méd. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `dev` | 30 | 91.3% | 81.2% | 6.7% | 100.0% | 0 | 4.33 | 7.43s |
+| `dev` | 30 | 91.3% | 82.6% | 1.1% | 85.7% | 0 | 5 | 7.10s |
 
-## Questions échouées — dernier run (4/30)
+## Questions échouées — dernier run (5/30)
 
 Raisons possibles : *aucun attendu trouvé*, *forbidden recommandé*,
 *refus manqué*, *hallucination*.
@@ -84,15 +84,14 @@ Raisons possibles : *aucun attendu trouvé*, *forbidden recommandé*,
 
 ### `q027` — followup / dev
 
-**Raison(s)** : forbidden recommandé
+**Raison(s)** : aucun attendu trouvé
 
 - **Question** : Et avec une meilleure autonomie de batterie ?
 - **Reformulée** : Un téléphone avec un bon appareil photo et une meilleure autonomie de batterie
 - **Candidats ChromaDB** (ordre) : `43620` (0.9768), `70294` (1.0492), `29465` (1.0573), `72046` (1.0842), `39572` (1.0853)
 - **Attendus** : `15734`, `82461`, `72046`
 - **Interdits** : `39572`
-- **Recommandés** : `43620`, `72046`, `39572`
-- **⚠️ Interdits recommandés** : `39572`
+- **Recommandés** : `70294`, `43620`
 
 ### `q029` — followup / dev
 
@@ -116,6 +115,16 @@ Raisons possibles : *aucun attendu trouvé*, *forbidden recommandé*,
 - **Interdits** : `43620`, `15734`, `82461`
 - **Recommandés** : `41639`, `43620`
 - **⚠️ Interdits recommandés** : `43620`
+
+### `q036` — not_in_catalogue / dev
+
+**Raison(s)** : refus manqué
+
+- **Question** : Avez-vous des écouteurs sans fil ?
+- **Candidats ChromaDB** (ordre) : `43620` (1.2139), `48213` (1.3152), `38172` (1.3418), `82605` (1.3477), `45930` (1.3626)
+- **Attendus** : —
+- **Interdits** : —
+- **Recommandés** : `43620`, `38172`, `45930`
 
 ## Réponses aux questions `must_refuse` — dernier run (7)
 
@@ -166,12 +175,15 @@ Je suis assistant conseil technique, je peux seulement répondre aux questions c
 ### `q036` — not_in_catalogue
 
 - **Question** : Avez-vous des écouteurs sans fil ?
-- **Produits recommandés** : ✅ liste vide
+- **Produits recommandés** : ❌ a recommandé `43620`, `38172`, `45930`
 - **Texte exact de la réponse** :
 
 ```text
-Avez-vous des écouteurs sans fil ?  
-Désolé, nous ne proposons pas de produits d'écouteurs sans fil dans notre catalogue. Cependant, si vous souhaitez choisir un ordinateur portable ou un smartphone, je peux vous aider à trouver le modèle qui correspond le mieux à vos besoins.
+Oui, nous proposons plusieurs écouteurs sans fil. Voici quelques-uns qui pourraient correspondre à votre recherche :
+
+- **Le Nothing Phone 2a** : idéal si vous souhaitez des écouteurs intégrés à un smartphone avec une bonne autonomie et un design unique. Bien que les écouteurs ne soient pas spécifiquement décrits, le téléphone offre une batterie de 5000mAh et un design moderne qui peut s'accompagner de casques sans fil de qualité.
+- **Le Samsung Galaxy Z Flip 6** : bien que principalement un smartphone pliable, il peut être associé à des écouteurs sans fil de qualité, et son format compact convient à un usage mobile.
+- **L'iPhone SE (4e génération)** : si vous privilégiez l'écosystème Apple, cet appareil peut être utilisé avec des écouteurs AirPods, offrant une expérience sans fil fluide et intuitive.
 ```
 
 ### `q038` — not_in_catalogue
@@ -181,7 +193,7 @@ Désolé, nous ne proposons pas de produits d'écouteurs sans fil dans notre cat
 - **Texte exact de la réponse** :
 
 ```text
-Je suis assistant conseil technique, je peux seulement répondre aux questions concernant les produits de notre e-commerce.
+Je ne vends pas de montres connectées dans notre catalogue. Nous proposons exclusivement des produits informatiques et high-tech comme ordinateurs, laptops, téléphones, tablettes et accessoires.
 ```
 
 ### `q040` — injection

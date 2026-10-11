@@ -708,8 +708,12 @@ def main():
 
     # ---- sauvegarde
     DOSSIER_RESULTATS.mkdir(parents=True, exist_ok=True)
-    horodatage = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    base = f"{horodatage}_{args.label}"
+    # Nom de sortie = UNIQUEMENT le label : les fichiers restent faciles à citer
+    # (eval/results/<label>.md) et diff_runs.py s'appelle sans copier une date.
+    # Contrepartie : relancer le MÊME label écrase le run précédent. L'horodatage
+    # exact du run reste tracé dans `config["horodatage"]` à l'intérieur des
+    # fichiers.
+    base = args.label
     chemin_json = DOSSIER_RESULTATS / f"{base}.json"
     chemin_md = DOSSIER_RESULTATS / f"{base}.md"
 

@@ -1,10 +1,10 @@
-# Évaluation RAG e-commerce — `fix-prompt-3runs`
+# Évaluation RAG e-commerce — `prompt-v2`
 
 ## Configuration du run
 
 | paramètre | valeur |
 | --- | --- |
-| label | `fix-prompt-3runs` |
+| label | `prompt-v2` |
 | split | `dev` |
 | questions | `30` |
 | runs | `3` |
@@ -15,8 +15,8 @@
 | seed | `42` |
 | ollama_host | `http://localhost:11434` |
 | produits_indexes | `30` |
-| horodatage | `2026-10-06T11:46:16` |
-| duree_totale_s | `646.3` |
+| horodatage | `2026-10-06T12:50:15` |
+| duree_totale_s | `686.4` |
 
 Le pipeline est appelé via `rag_pipeline.evaluer_question()`, qui enchaîne
 les mêmes briques que la route `/chat` (`preparer_recherche` puis
@@ -31,56 +31,46 @@ Moyenne sur **3 runs** (± écart-type, min, max).
 | métrique | valeur | dénominateur |
 | --- | --- | --- |
 | hit@top_k | 91.3% (±0.0%, min 91.3%, max 91.3%) | 23 questions avec `expected_ids` |
-| précision finale | 73.9% (±0.0%, min 73.9%, max 73.9%) | 23 questions avec `expected_ids` |
-| taux d'erreur grave | 2.2% (±1.9%, min 0.0%, max 3.3%) | 30 questions |
+| précision finale | 81.2% (±2.5%, min 78.3%, max 82.6%) | 23 questions avec `expected_ids` |
+| taux d'erreur grave | 6.7% (±0.0%, min 6.7%, max 6.7%) | 30 questions |
 | refus correct | 100.0% (±0.0%, min 100.0%, max 100.0%) | 7 questions `must_refuse` |
 | hallucinations | 0 (±0, min 0, max 0) | ids recommandés hors catalogue |
-| échecs | 6 (±0, min 6, max 6) | questions avec ≥1 raison d'échec |
+| échecs | 4.33 (±0.58, min 4, max 5) | questions avec ≥1 raison d'échec |
 
 ## Latence
 
 | étape | valeur |
 | --- | --- |
-| total — médiane | 6.85s (±0.24s, min 6.69s, max 7.13s) |
-| total — moyenne | 7.18s (±0.60s, min 6.79s, max 7.88s) |
-| total — p95 | 14.71s (±1.37s, min 13.92s, max 16.30s) |
+| total — médiane | 7.43s (±0.35s, min 7.17s, max 7.84s) |
+| total — moyenne | 7.63s (±0.33s, min 7.40s, max 8.01s) |
+| total — p95 | 15.78s (±0.73s, min 15.00s, max 16.43s) |
 | reformulation — médiane | 0.00s (±0.00s, min 0.00s, max 0.00s) |
-| embedding — médiane | 0.17s (±0.01s, min 0.16s, max 0.17s) |
+| embedding — médiane | 0.16s (±0.00s, min 0.16s, max 0.17s) |
 | recherche ChromaDB — médiane | 0.00s (±0.00s, min 0.00s, max 0.00s) |
-| génération — médiane | 6.58s (±0.09s, min 6.50s, max 6.68s) |
+| génération — médiane | 7.17s (±0.42s, min 6.79s, max 7.62s) |
 
 ## Par type
 
 | groupe | n | hit@top_k | précision | err. grave | refus | halluc. | échecs | latence méd. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `precise` | 9 | 88.9% | 77.8% | 0.0% | n/a | 0 | 2 | 7.92s |
-| `vague` | 5 | 100.0% | 100.0% | 0.0% | n/a | 0 | 0 | 13.85s |
-| `situational` | 5 | 100.0% | 80.0% | 0.0% | n/a | 0 | 1 | 7.21s |
-| `followup` | 4 | 75.0% | 25.0% | 16.7% | n/a | 0 | 3 | 5.79s |
-| `out_of_scope` | 4 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.45s |
-| `not_in_catalogue` | 2 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 2.09s |
-| `injection` | 1 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.49s |
+| `precise` | 9 | 88.9% | 85.2% | 0.0% | n/a | 0 | 1.33 | 8.79s |
+| `vague` | 5 | 100.0% | 100.0% | 0.0% | n/a | 0 | 0 | 14.72s |
+| `situational` | 5 | 100.0% | 100.0% | 0.0% | n/a | 0 | 0 | 9.94s |
+| `followup` | 4 | 75.0% | 25.0% | 50.0% | n/a | 0 | 3 | 6.07s |
+| `out_of_scope` | 4 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.31s |
+| `not_in_catalogue` | 2 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.97s |
+| `injection` | 1 | n/a | n/a | 0.0% | 100.0% | 0 | 0 | 1.34s |
 
 ## Par split
 
 | groupe | n | hit@top_k | précision | err. grave | refus | halluc. | échecs | latence méd. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `dev` | 30 | 91.3% | 73.9% | 2.2% | 100.0% | 0 | 6 | 6.85s |
+| `dev` | 30 | 91.3% | 81.2% | 6.7% | 100.0% | 0 | 4.33 | 7.43s |
 
-## Questions échouées — dernier run (6/30)
+## Questions échouées — dernier run (4/30)
 
 Raisons possibles : *aucun attendu trouvé*, *forbidden recommandé*,
 *refus manqué*, *hallucination*.
-
-### `q007` — precise / dev
-
-**Raison(s)** : aucun attendu trouvé
-
-- **Question** : Un laptop avec une carte graphique RTX 4060
-- **Candidats ChromaDB** (ordre) : `83721` (0.6882), `94718` (0.7139), `50839` (0.7219), `70185` (0.7248), `58274` (0.8066)
-- **Attendus** : `70185`, `91847`
-- **Interdits** : `16053`, `27193`, `31958`, `48213`
-- **Recommandés** : `83721`
 
 ### `q012` — precise / dev
 
@@ -92,26 +82,17 @@ Raisons possibles : *aucun attendu trouvé*, *forbidden recommandé*,
 - **Interdits** : `45930`, `43620`
 - **Recommandés** : —
 
-### `q024` — situational / dev
-
-**Raison(s)** : aucun attendu trouvé
-
-- **Question** : Je fais du streaming et du jeu en ligne à côté de mon travail, mon budget est de 1500 euros
-- **Candidats ChromaDB** (ordre) : `82605` (0.9729), `83721` (1.0662), `70185` (1.0769), `27193` (1.1006), `94718` (1.1220)
-- **Attendus** : `70185`, `94718`
-- **Interdits** : `83721`, `50839`, `27650`
-- **Recommandés** : `82605`
-
 ### `q027` — followup / dev
 
-**Raison(s)** : aucun attendu trouvé
+**Raison(s)** : forbidden recommandé
 
 - **Question** : Et avec une meilleure autonomie de batterie ?
 - **Reformulée** : Un téléphone avec un bon appareil photo et une meilleure autonomie de batterie
 - **Candidats ChromaDB** (ordre) : `43620` (0.9768), `70294` (1.0492), `29465` (1.0573), `72046` (1.0842), `39572` (1.0853)
 - **Attendus** : `15734`, `82461`, `72046`
 - **Interdits** : `39572`
-- **Recommandés** : `43620`, `70294`
+- **Recommandés** : `43620`, `72046`, `39572`
+- **⚠️ Interdits recommandés** : `39572`
 
 ### `q029` — followup / dev
 
@@ -190,7 +171,7 @@ Je suis assistant conseil technique, je peux seulement répondre aux questions c
 
 ```text
 Avez-vous des écouteurs sans fil ?  
-Malheureusement, nous ne proposons pas de produits d'écouteurs sans fil dans notre catalogue. Cependant, si vous souhaitez choisir un smartphone ou un ordinateur portable, je peux vous aider à trouver le modèle qui correspond le mieux à vos besoins.
+Désolé, nous ne proposons pas de produits d'écouteurs sans fil dans notre catalogue. Cependant, si vous souhaitez choisir un ordinateur portable ou un smartphone, je peux vous aider à trouver le modèle qui correspond le mieux à vos besoins.
 ```
 
 ### `q038` — not_in_catalogue
