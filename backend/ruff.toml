@@ -1,0 +1,23 @@
+# Configuration ruff (lint + tri des imports) pour le backend.
+# Lancement : ruff check backend/   (depuis la racine du projet)
+
+line-length = 100
+target-version = "py311"
+
+[lint]
+# E/F = règles par défaut (pycodestyle + pyflakes), I = tri des imports.
+select = ["E", "F", "I"]
+
+[lint.isort]
+# `config`, `ingestion`, `rag_pipeline` sont importés sans préfixe de package
+# (l'API est lancée depuis backend/) : sans ça, ruff les classerait en
+# bibliothèques tierces et voudrait réordonner les imports de tous les modules.
+known-first-party = ["api", "config", "ingestion", "rag_pipeline"]
+
+[lint.per-file-ignores]
+# La ligne 249 de SYSTEM_PROMPT est la phrase de redirection hors-sujet, à
+# respecter MOT POUR MOT (règle 1 du prompt, référencée par les comptes rendus
+# d'évaluation) : elle dépasse 100 caractères et ne peut être ni coupée, ni
+# annotée `# noqa` (elle est à l'intérieur d'une chaîne). On neutralise donc
+# E501 sur ce seul fichier plutôt que de toucher au prompt.
+"rag_pipeline.py" = ["E501"]

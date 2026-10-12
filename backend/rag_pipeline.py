@@ -32,6 +32,7 @@ import time
 
 # Client Ollama partagé (URL pilotée par OLLAMA_HOST, voir config.py).
 from config import OLLAMA_HOST, client_ollama
+
 # On réutilise la config et l'accès collection de l'ingestion (cohérence :
 # même dossier ChromaDB, même modèle d'embedding).
 from ingestion import (

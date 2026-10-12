@@ -34,6 +34,7 @@ from rag_pipeline import (
     preparer_recherche,
 )
 
+
 # --------------------------------------------------------------------------
 # Modèles de données (validation automatique des requêtes/réponses par Pydantic)
 # --------------------------------------------------------------------------

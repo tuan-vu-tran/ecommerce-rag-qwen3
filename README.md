@@ -1,5 +1,7 @@
 # Assistant conseil produit e-commerce (RAG local)
 
+[![CI](https://github.com/tuan-vu-tran/ecommerce-rag-qwen3/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tuan-vu-tran/ecommerce-rag-qwen3/actions/workflows/ci.yml)
+
 Assistant qui aide un client à choisir un produit informatique ou high-tech à partir
 d'une demande en langage naturel, en s'appuyant sur un pipeline RAG exécuté
 **entièrement en local** (Qwen3 via Ollama, ChromaDB persistant, FastAPI, React).
@@ -232,6 +234,21 @@ Les tests marqués `@pytest.mark.integration` ont besoin d'un vrai Ollama et d'u
 ChromaDB : ils sont **exclus par défaut** (voir `backend/pytest.ini`) et se lancent
 explicitement avec `pytest -m integration`.
 
+Le lint est assuré par **ruff** (`backend/ruff.toml` : règles `E`/`F` + tri des imports
+`I`, lignes à 100 caractères) :
+
+```bash
+pip install -r backend/requirements-dev.txt
+ruff check backend/
+```
+
+La **CI GitHub Actions** (`.github/workflows/ci.yml`) lance à chaque push sur `main` et
+sur chaque pull request quatre jobs indépendants : **lint** (ruff), **tests** (pytest
+depuis `backend/`), **build Docker** (images backend et frontend, sans push) et **build
+frontend** (`npm ci` + `npm run build` sur Node 20). L'**évaluation RAG (`eval/`) n'est
+PAS lancée en CI** : elle nécessite un serveur Ollama avec `qwen3:8b` et
+`qwen3-embedding:0.6b`, donc un GPU — elle reste une étape manuelle et hors ligne.
+
 ## Limites connues
 
 - Les spécifications et prix du catalogue de démonstration ne sont pas vérifiés et ne
@@ -240,8 +257,8 @@ explicitement avec `pytest -m integration`.
   en *chunks* (une description = un document), `top_k` fixé à 5.
 - Aucune évaluation chiffrée du retrieval ni de la génération à ce stade : la
   validation est manuelle (`backend/test_stream.py` et la CLI de debug).
-- Pas de CI : les tests `pytest` (voir *Tests*) se lancent à la main ; aucun test
-  de bout en bout n'est exécuté par défaut (ils demandent Ollama).
+- La CI (lint, tests, builds) ne couvre pas le bout en bout : aucun test ne sollicite
+  un vrai Ollama, et l'évaluation RAG (`eval/`) reste manuelle faute de GPU en CI.
 - Pas d'authentification ni de limitation de débit sur l'API.
 
 ## Roadmap (à venir)

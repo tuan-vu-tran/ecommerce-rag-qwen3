@@ -1,0 +1,126 @@
+# ---------------------------------------------------------------------------
+# Intégration continue : lint, tests, build des images Docker, build frontend.
+#
+# Aucun secret, aucun déploiement, aucun push d'image : la CI se contente de
+# vérifier que tout compile et que les tests passent sur une machine vierge.
+#
+# L'évaluation RAG (eval/) N'EST PAS lancée ici : elle a besoin d'un serveur
+# Ollama avec qwen3:8b + qwen3-embedding:0.6b et d'un GPU. Elle reste manuelle
+# (voir eval/README.md).
+# ---------------------------------------------------------------------------
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Lecture seule : la CI n'écrit rien dans le dépôt.
+permissions:
+  contents: read
+
+# Un push qui en remplace un autre sur la même branche annule le run obsolète.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -----------------------------------------------------------------------
+  # 1. Lint Python (ruff : règles E, F + tri des imports I)
+  # -----------------------------------------------------------------------
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ruff est un binaire autonome : pas besoin d'installer le reste des
+      # dépendances du backend pour linter.
+      - name: Installer ruff
+        run: pip install ruff
+
+      # La config est backend/ruff.toml (line-length 100, select E/F/I).
+      - name: ruff check
+        run: ruff check backend/
+
+  # -----------------------------------------------------------------------
+  # 2. Tests pytest — ni Ollama, ni ChromaDB, ni GPU
+  # -----------------------------------------------------------------------
+  tests:
+    name: Tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          # Cache des wheels pip, invalidé quand un des deux fichiers change.
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+
+      # Lancé DEPUIS backend/ : pytest.ini y est le rootdir, et les modules
+      # (config, ingestion, rag_pipeline) s'importent sans préfixe de package.
+      # Aucune variable d'environnement : les doublures de tests/conftest.py
+      # remplacent Ollama et ChromaDB. Les tests `integration` sont exclus par
+      # l'addopts de pytest.ini.
+      - name: pytest
+        working-directory: backend
+        run: pytest -v
+
+  # -----------------------------------------------------------------------
+  # 3. Build des images Docker (aucun push, aucun registry)
+  # -----------------------------------------------------------------------
+  docker:
+    name: Build images Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Contexte = racine du projet (l'image copie backend/ ET data/), avec le
+      # Dockerfile du backend : exactement ce que fait docker-compose.yml.
+      - name: Build image backend
+        run: docker build -f backend/Dockerfile -t rag-ecommerce-api:ci .
+
+      # Contexte = frontend/ (le Dockerfile y copie package.json, nginx.conf...).
+      - name: Build image frontend
+        run: docker build -f Dockerfile -t rag-ecommerce-web:ci .
+        working-directory: frontend
+
+  # -----------------------------------------------------------------------
+  # 4. Build du frontend (hors Docker : échec plus lisible)
+  # -----------------------------------------------------------------------
+  frontend:
+    name: Build frontend (Vite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm ci : installation reproductible depuis package-lock.json.
+      - name: npm ci
+        working-directory: frontend
+        run: npm ci
+
+      - name: npm run build
+        working-directory: frontend
+        run: npm run build

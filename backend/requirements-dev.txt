@@ -3,9 +3,11 @@
 #   pytest       -> harnais de test
 #   httpx        -> requis par fastapi.testclient.TestClient (client ASGI)
 #   pytest-mock  -> fixture `mocker` (mocks concis dans les tests)
+#   ruff         -> lint + tri des imports (config dans backend/ruff.toml)
 #
 # Installation :
 #   pip install -r requirements-dev.txt
 pytest>=8.0
 httpx>=0.27
 pytest-mock>=3.12
+ruff>=0.6
