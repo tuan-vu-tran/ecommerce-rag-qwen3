@@ -1,0 +1,11 @@
+# Dépendances de DÉVELOPPEMENT uniquement (tests). Rien ici n'est nécessaire
+# pour faire tourner le backend en production : voir requirements.txt.
+#   pytest       -> harnais de test
+#   httpx        -> requis par fastapi.testclient.TestClient (client ASGI)
+#   pytest-mock  -> fixture `mocker` (mocks concis dans les tests)
+#
+# Installation :
+#   pip install -r requirements-dev.txt
+pytest>=8.0
+httpx>=0.27
+pytest-mock>=3.12

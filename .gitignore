@@ -13,3 +13,6 @@ CLAUDE.md
 # gardees : ce sont elles qui documentent l'evolution des scores.
 eval/results/*.json
 !eval/results/*.md
+
+# pytest
+.pytest_cache/

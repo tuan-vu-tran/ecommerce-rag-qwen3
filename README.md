@@ -209,6 +209,29 @@ curl -N --no-buffer -X POST http://localhost:8000/chat \
 
 CORS autorisé pour `http://localhost:3000` et `http://localhost:5173`.
 
+## Tests
+
+Tests automatisés `pytest` de l'API. Ils **ne dépendent ni d'Ollama, ni d'un GPU, ni
+d'une base ChromaDB remplie** : ces deux dépendances sont remplacées par des doublures
+(`backend/tests/conftest.py`). Ils tournent donc en quelques secondes, Ollama arrêté.
+
+```bash
+conda activate rag-qwen
+pip install -r backend/requirements-dev.txt    # pytest + httpx (TestClient) + pytest-mock
+
+cd backend && pytest -v                        # ~1,5 s
+```
+
+Couverture : endpoints (`/health`, `/produits`, `/produits/{id}`, `/chat` — validation
+422, question vide 400, 503 si Ollama KO, streaming), découpage du flux
+`---PRODUITS---` (marqueur coupé entre deux chunks, JSON cassé, marqueur absent,
+filtrage des id hallucinés), lecture de la configuration par variables
+d'environnement, et intégrité de `data/catalogue.json`.
+
+Les tests marqués `@pytest.mark.integration` ont besoin d'un vrai Ollama et d'un index
+ChromaDB : ils sont **exclus par défaut** (voir `backend/pytest.ini`) et se lancent
+explicitement avec `pytest -m integration`.
+
 ## Limites connues
 
 - Les spécifications et prix du catalogue de démonstration ne sont pas vérifiés et ne
@@ -217,7 +240,8 @@ CORS autorisé pour `http://localhost:3000` et `http://localhost:5173`.
   en *chunks* (une description = un document), `top_k` fixé à 5.
 - Aucune évaluation chiffrée du retrieval ni de la génération à ce stade : la
   validation est manuelle (`backend/test_stream.py` et la CLI de debug).
-- Pas de CI ni de tests automatisés.
+- Pas de CI : les tests `pytest` (voir *Tests*) se lancent à la main ; aucun test
+  de bout en bout n'est exécuté par défaut (ils demandent Ollama).
 - Pas d'authentification ni de limitation de débit sur l'API.
 
 ## Roadmap (à venir)

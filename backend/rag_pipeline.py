@@ -363,6 +363,93 @@ def _parser_produits(texte_apres_marqueur, ids_valides):
     return produits
 
 
+def decouper_flux_modele(tokens, ids_valides):
+    """
+    Logique de DÉCOUPAGE du flux brut du modèle, isolée ici en fonction PURE
+    (aucun appel Ollama) afin d'être testable directement.
+
+    `tokens` : itérable de fragments de texte tels que produits par le modèle.
+    `ids_valides` : ensemble des id candidats (filet anti-hallucination).
+
+    Générateur qui `yield` :
+      1. le texte AVANT le marqueur, au fil de l'eau (en retenant une petite
+         queue pour ne jamais diffuser un marqueur coupé entre deux tokens) ;
+      2. puis "\n---PRODUITS---\n" suivi du JSON des produits validés.
+    """
+    buffer = ""            # tout le texte reçu du modèle
+    deja_emis = 0          # longueur du texte déjà diffusé au client
+    marqueur_vu = False    # a-t-on rencontré ---PRODUITS--- ?
+    # Nombre de caractères de queue qu'on retient tant qu'on n'a pas vu le
+    # marqueur, pour ne pas diffuser un marqueur coupé en deux entre 2 tokens.
+    garde = len(MARQUEUR_PRODUITS) - 1
+
+    for token in tokens:
+        if not token:
+            continue
+        buffer += token
+        if marqueur_vu:
+            # On a déjà passé le marqueur : on ne diffuse plus, on bufferise le
+            # bloc produits pour le parser à la fin.
+            continue
+
+        idx = buffer.find(MARQUEUR_PRODUITS)
+        if idx != -1:
+            # Marqueur trouvé : on diffuse le texte restant AVANT le marqueur.
+            marqueur_vu = True
+            if idx > deja_emis:
+                yield buffer[deja_emis:idx]
+            deja_emis = idx
+        else:
+            # Pas encore de marqueur : on diffuse tout sauf une petite queue
+            # (qui pourrait être le début d'un marqueur).
+            fin_sure = len(buffer) - garde
+            if fin_sure > deja_emis:
+                yield buffer[deja_emis:fin_sure]
+                deja_emis = fin_sure
+
+    # ---- Fin du flux du modèle ----
+    if marqueur_vu:
+        apres = buffer[buffer.find(MARQUEUR_PRODUITS) + len(MARQUEUR_PRODUITS):]
+        produits_reco = _parser_produits(apres, ids_valides)
+    else:
+        # Le modèle n'a pas émis de marqueur : on diffuse le texte restant et on
+        # considère qu'aucun produit n'est recommandé.
+        if len(buffer) > deja_emis:
+            yield buffer[deja_emis:]
+        produits_reco = []
+
+    # Chunk final : marqueur propre + JSON des produits recommandés.
+    yield "\n" + MARQUEUR_PRODUITS + "\n"
+    yield json.dumps(produits_reco, ensure_ascii=False)
+
+
+def separer_texte_et_produits(flux):
+    """
+    Inverse de `decouper_flux_modele` : relit un flux DÉJÀ émis par le backend
+    (chaîne complète ou itérable de chunks) et renvoie le couple
+    `(reponse_texte, produits_recommandes)`.
+
+    Fonction PURE (aucun appel Ollama) : c'est la logique de découpage côté
+    consommateur, partagée par `generer_reponse()` et les tests. Sans marqueur,
+    tout le texte est renvoyé et la liste produits est vide ; si le JSON est
+    cassé, la liste est vide (jamais d'exception).
+    """
+    texte = flux if isinstance(flux, str) else "".join(flux)
+    avant, sep, apres = texte.partition(MARQUEUR_PRODUITS)
+    reponse_texte = avant.strip()
+
+    produits_reco = []
+    if sep:
+        try:
+            produits_reco = json.loads(apres.strip())
+        except json.JSONDecodeError:
+            produits_reco = []
+    if not isinstance(produits_reco, list):
+        produits_reco = []
+
+    return reponse_texte, produits_reco
+
+
 def generer_reponse_stream(
     question,
     produits,
@@ -413,52 +500,12 @@ def generer_reponse_stream(
             f"Ollama injoignable pour la génération ({OLLAMA_HOST}).\nDétail : {e}"
         )
 
-    buffer = ""            # tout le texte reçu du modèle
-    deja_emis = 0          # longueur du texte déjà diffusé au client
-    marqueur_vu = False    # a-t-on rencontré ---PRODUITS--- ?
-    # Nombre de caractères de queue qu'on retient tant qu'on n'a pas vu le
-    # marqueur, pour ne pas diffuser un marqueur coupé en deux entre 2 tokens.
-    garde = len(MARQUEUR_PRODUITS) - 1
-
-    for morceau in flux:
-        token = morceau["message"]["content"]
-        if not token:
-            continue
-        buffer += token
-        if marqueur_vu:
-            # On a déjà passé le marqueur : on ne diffuse plus, on bufferise le
-            # bloc produits pour le parser à la fin.
-            continue
-
-        idx = buffer.find(MARQUEUR_PRODUITS)
-        if idx != -1:
-            # Marqueur trouvé : on diffuse le texte restant AVANT le marqueur.
-            marqueur_vu = True
-            if idx > deja_emis:
-                yield buffer[deja_emis:idx]
-            deja_emis = idx
-        else:
-            # Pas encore de marqueur : on diffuse tout sauf une petite queue
-            # (qui pourrait être le début d'un marqueur).
-            fin_sure = len(buffer) - garde
-            if fin_sure > deja_emis:
-                yield buffer[deja_emis:fin_sure]
-                deja_emis = fin_sure
-
-    # ---- Fin du flux du modèle ----
-    if marqueur_vu:
-        apres = buffer[buffer.find(MARQUEUR_PRODUITS) + len(MARQUEUR_PRODUITS):]
-        produits_reco = _parser_produits(apres, ids_valides)
-    else:
-        # Le modèle n'a pas émis de marqueur : on diffuse le texte restant et on
-        # considère qu'aucun produit n'est recommandé.
-        if len(buffer) > deja_emis:
-            yield buffer[deja_emis:]
-        produits_reco = []
-
-    # Chunk final : marqueur propre + JSON des produits recommandés.
-    yield "\n" + MARQUEUR_PRODUITS + "\n"
-    yield json.dumps(produits_reco, ensure_ascii=False)
+    # Le découpage lui-même est isolé dans `decouper_flux_modele` (fonction pure,
+    # testable sans Ollama) : ici on ne fait que lui passer les tokens.
+    yield from decouper_flux_modele(
+        (morceau["message"]["content"] for morceau in flux),
+        ids_valides,
+    )
 
 
 def generer_reponse(
@@ -483,15 +530,7 @@ def generer_reponse(
         temperature=temperature,
         seed=seed,
     ))
-    avant, sep, apres = texte.partition(MARQUEUR_PRODUITS)
-    reponse_texte = avant.strip()
-
-    produits_reco = []
-    if sep:
-        try:
-            produits_reco = json.loads(apres.strip())
-        except json.JSONDecodeError:
-            produits_reco = []
+    reponse_texte, produits_reco = separer_texte_et_produits(texte)
 
     if not reponse_texte and not produits_reco:
         # Filet de sécurité : le modèle n'a rien produit d'exploitable.
